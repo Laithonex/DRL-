@@ -1,7 +1,7 @@
 import numpy as np
 from collections import deque
 
-class TradingEnvironment:
+class TradingEnv:
     def __init__(self, data_df, is_training=True, fee_rate=0.001,
                  variance_window=30, out_market_penalty=0.1):
         self.initial_balance = 100000.0
@@ -87,3 +87,9 @@ class TradingEnvironment:
         self.return_history.clear()
         self.time_out_market = 0
         return self.get_observation(), {}
+
+
+# Backwards compatibility with older imports
+TradingEnvironment = TradingEnv
+
+__all__ = ["TradingEnv", "TradingEnvironment"]
