@@ -1,9 +1,21 @@
-import numpy as np
+from __future__ import annotations
+
 from collections import deque
 
-class TradingEnv:
-    def __init__(self, data_df, is_training=True, fee_rate=0.001,
-                 variance_window=30, out_market_penalty=0.1):
+import gymnasium as gym
+import numpy as np
+from gymnasium import spaces
+
+
+class TradingEnv(gym.Env):
+    def __init__(
+        self,
+        data_df,
+        is_training: bool = True,
+        fee_rate: float = 0.001,
+        variance_window: int = 30,
+        out_market_penalty: float = 0.1,
+    ):
         self.initial_balance = 100000.0
         self.balance = float(self.initial_balance)
         self.shares_held = 0.0
@@ -18,6 +30,11 @@ class TradingEnv:
         self.return_history = deque(maxlen=variance_window)
         self.time_out_market = 0
         self.out_market_penalty = out_market_penalty
+
+        self.action_space = spaces.Discrete(3)
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(3,), dtype=np.float32
+        )
 
     def get_observation(self):
         current_data = self.df.iloc[self.current_step]
@@ -77,10 +94,28 @@ class TradingEnv:
         }
         return self.get_observation(), reward, terminated, False, info
 
-    def reset(self):
+    def reset(
+        self,
+        *,
+        start_index: int = 0,
+        seed: int | None = None,
+        options: dict | None = None,
+    ):
+        """Reset environment state and optionally set a custom start index.
+
+        Parameters
+        ----------
+        start_index : int, optional
+            Dataset index to begin the episode from, by default 0.
+        seed : int | None, optional
+            Unused but accepted for Gymnasium compatibility.
+        options : dict | None, optional
+            Unused placeholder to match Gymnasium's signature.
+        """
+        super().reset(seed=seed)
         self.balance = float(self.initial_balance)
         self.shares_held = 0.0
-        self.current_step = 0
+        self.current_step = int(start_index)
         self.total_profit = 0.0
         self.last_action = None
         self.holding_duration = 0
