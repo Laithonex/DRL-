@@ -1,10 +1,9 @@
 import numpy as np
 from collections import deque
-import gymnasium
 import gymnasium as gym
 
 
-class TradingEnvironment(gymnasium.Env):
+class TradingEnvironment(gym.Env):
     def __init__(self, data_df, is_training=True, fee_rate=0.001,
                  variance_window=30, out_market_penalty=0.1,
                  max_time_out_market=10):
