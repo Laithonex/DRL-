@@ -1,7 +1,10 @@
 import numpy as np
 from collections import deque
+import gymnasium
+import gymnasium as gym
 
-class TradingEnvironment:
+
+class TradingEnvironment(gymnasium.Env):
     def __init__(self, data_df, is_training=True, fee_rate=0.001,
                  variance_window=30, out_market_penalty=0.1):
         self.initial_balance = 100000.0
@@ -18,6 +21,12 @@ class TradingEnvironment:
         self.return_history = deque(maxlen=variance_window)
         self.time_out_market = 0
         self.out_market_penalty = out_market_penalty
+
+        # Gym spaces
+        self.action_space = gym.spaces.Discrete(3)
+        self.observation_space = gym.spaces.Box(
+            low=0.0, high=np.inf, shape=(3,), dtype=np.float32
+        )
 
     def get_observation(self):
         current_data = self.df.iloc[self.current_step]
@@ -77,7 +86,8 @@ class TradingEnvironment:
         }
         return self.get_observation(), reward, terminated, False, info
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
         self.balance = float(self.initial_balance)
         self.shares_held = 0.0
         self.current_step = 0
