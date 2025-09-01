@@ -3,7 +3,8 @@ from collections import deque
 
 class TradingEnvironment:
     def __init__(self, data_df, is_training=True, fee_rate=0.001,
-                 variance_window=30, out_market_penalty=0.1):
+                 variance_window=30, out_market_penalty=0.1,
+                 max_time_out_market=10):
         self.initial_balance = 100000.0
         self.balance = float(self.initial_balance)
         self.shares_held = 0.0
@@ -18,6 +19,7 @@ class TradingEnvironment:
         self.return_history = deque(maxlen=variance_window)
         self.time_out_market = 0
         self.out_market_penalty = out_market_penalty
+        self.max_time_out_market = max_time_out_market
 
     def get_observation(self):
         current_data = self.df.iloc[self.current_step]
@@ -42,6 +44,8 @@ class TradingEnvironment:
                 if shares_to_buy > 0:
                     self.shares_held += shares_to_buy
                     self.balance -= cost + trade_fee
+        elif action == 1:  # Hold
+            pass
         elif action == 2:  # Sell
             if self.shares_held > 0:
                 shares_to_sell = self.shares_held * 0.9
@@ -63,7 +67,9 @@ class TradingEnvironment:
         reward /= (1.0 + variance_penalty)
 
         if self.shares_held == 0:
-            self.time_out_market += 1
+            self.time_out_market = min(
+                self.time_out_market + 1, self.max_time_out_market
+            )
             reward -= self.out_market_penalty * self.time_out_market
         else:
             self.time_out_market = 0
