@@ -91,8 +91,8 @@ class TradingEnvironment(gym.Env):
         }
         return self.get_observation(), reward, terminated, False, info
 
-    def reset(self, seed=None, options=None):
-        super().reset(seed=seed)
+    def reset(self, options=None):
+        super().reset()
         self.balance = float(self.initial_balance)
         self.shares_held = 0.0
         self.current_step = 0
